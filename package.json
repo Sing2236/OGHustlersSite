@@ -1,0 +1,28 @@
+{
+  "name": "oghustlerssite",
+  "version": "1.0.0",
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "web": "expo start --web",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "db:init": "node scripts/init-supabase.mjs",
+    "db:init:cli": "node scripts/init-supabase-cli.mjs"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~5.0.5",
+    "@supabase/supabase-js": "^2.97.0",
+    "dotenv": "^16.6.1",
+    "expo": "~53.0.20",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-web": "~0.20.0"
+  },
+  "devDependencies": {
+    "supabase": "^2.76.10"
+  }
+}
