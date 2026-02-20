@@ -1,0 +1,36 @@
+
+> oghustlers-cms@1.0.0 dev
+> cross-env NODE_OPTIONS=--no-deprecation next dev -p 3001
+
+   ▲ Next.js 15.4.11
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.1.104:3001
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 2.3s
+ ○ Compiling /api/[...slug] ...
+ ✓ Compiled /api/[...slug] in 3.4s (1074 modules)
+ GET /api/products?where%5Bactive%5D%5Bequals%5D=true&limit=5&sort=-updatedAt 200 in 9754ms
+[23:01:45] [33mWARN[39m: [36mNo email adapter provided. Email will be written to console. More info at https://payloadcms.com/docs/email/overview.[39m
+ GET /api/products?limit=5&sort=-updatedAt 200 in 188ms
+ GET /api/globals/site-settings 200 in 111ms
+ GET /api/pages?where%5Bslug%5D%5Bequals%5D=home&where%5B_status%5D%5Bequals%5D=published&limit=1 200 in 829ms
+ GET /api/stores?where%5Bactive%5D%5Bequals%5D=true&sort=displayOrder&limit=100 200 in 834ms
+ GET /api/products?where%5Bactive%5D%5Bequals%5D=true&limit=100&sort=-updatedAt 200 in 835ms
+ GET /api/news?where%5B_status%5D%5Bequals%5D=published&limit=6&sort=-publishedAt 200 in 838ms
+ GET /api/globals/site-settings 200 in 683ms
+ GET /api/stores?where%5Bactive%5D%5Bequals%5D=true&sort=displayOrder&limit=100 200 in 736ms
+ GET /api/products?where%5Bactive%5D%5Bequals%5D=true&limit=100&sort=-updatedAt 200 in 745ms
+ GET /api/pages?where%5Bslug%5D%5Bequals%5D=home&where%5B_status%5D%5Bequals%5D=published&limit=1 200 in 749ms
+ GET /api/news?where%5B_status%5D%5Bequals%5D=published&limit=6&sort=-publishedAt 200 in 760ms
+ GET /api/globals/site-settings 200 in 647ms
+ GET /api/pages?where%5Bslug%5D%5Bequals%5D=home&where%5B_status%5D%5Bequals%5D=published&limit=1 200 in 722ms
+ GET /api/products?where%5Bactive%5D%5Bequals%5D=true&limit=100&sort=-updatedAt 200 in 725ms
+ GET /api/stores?where%5Bactive%5D%5Bequals%5D=true&sort=displayOrder&limit=100 200 in 748ms
+ GET /api/news?where%5B_status%5D%5Bequals%5D=published&limit=6&sort=-publishedAt 200 in 751ms
+ ○ Compiling /admin/[[...segments]] ...
+ ✓ Compiled /admin/[[...segments]] in 5.2s (3252 modules)
+ ○ Compiling /api/[...slug] ...
+ ✓ Compiled /api/[...slug] in 674ms (2158 modules)
+ GET /api/products?limit=1 200 in 1332ms

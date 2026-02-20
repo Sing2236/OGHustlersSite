@@ -139,6 +139,7 @@ const PRODUCTS_TABLE =
   process.env.EXPO_PUBLIC_SUPABASE_PRODUCTS_TABLE ||
   process.env.SUPABASE_PRODUCTS_TABLE ||
   "products";
+const MAX_STORES = 3;
 
 function openUrl(url) {
   Linking.openURL(url).catch(() => {
@@ -325,7 +326,7 @@ function ContactTab({ brand }) {
 export default function App() {
   const [activeTab, setActiveTab] = useState("overview");
   const [brand, setBrand] = useState(DEFAULT_BRAND);
-  const [stores, setStores] = useState(DEFAULT_STORES);
+  const [stores, setStores] = useState(DEFAULT_STORES.slice(0, MAX_STORES));
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
   const [newsItems, setNewsItems] = useState(DEFAULT_NEWS);
   const [homePage, setHomePage] = useState(DEFAULT_HOME_PAGE);
@@ -365,7 +366,7 @@ export default function App() {
 
       if (Array.isArray(storeResult.data) && storeResult.data.length > 0) {
         setStores(
-          storeResult.data.map((store, index) => ({
+          storeResult.data.slice(0, MAX_STORES).map((store, index) => ({
             id: String(store.id || `store-${index + 1}`),
             name: store.name || "OG Hustlers Store",
             address: store.address || "Address unavailable",
@@ -410,7 +411,7 @@ export default function App() {
 
           if (Array.isArray(cmsData.stores) && cmsData.stores.length > 0) {
             setStores(
-              cmsData.stores.map((store, index) => ({
+              cmsData.stores.slice(0, MAX_STORES).map((store, index) => ({
                 id: String(store.id || `store-${index + 1}`),
                 name: store.name || "OG Hustlers Store",
                 address: store.address || "Address unavailable",
