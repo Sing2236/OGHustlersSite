@@ -43,21 +43,26 @@ create policy "Public can read products"
 on public.products for select
 using (true);
 
-insert into public.contact_info (id, name, tagline, support_email, support_phone)
-values (
-  1,
+insert into public.contact_info (name, tagline, support_email, support_phone)
+select
   'OG Hustlers Smoke Shop',
   'Premium glass, vapes, wraps, and accessories',
   'support@oghustlers.com',
   '+1 (555) 010-2424'
-)
-on conflict (id) do update
+where not exists (
+  select 1 from public.contact_info
+);
+
+update public.contact_info
 set
-  name = excluded.name,
-  tagline = excluded.tagline,
-  support_email = excluded.support_email,
-  support_phone = excluded.support_phone,
-  updated_at = now();
+  name = 'OG Hustlers Smoke Shop',
+  tagline = 'Premium glass, vapes, wraps, and accessories',
+  support_email = 'support@oghustlers.com',
+  support_phone = '+1 (555) 010-2424',
+  updated_at = now()
+where id = (
+  select id from public.contact_info order by id asc limit 1
+);
 
 insert into public.stores (id, name, address, phone, hours, maps_url)
 values

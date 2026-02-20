@@ -1,50 +1,88 @@
-# OG Hustlers React Native Website
+# OG Hustlers Site
 
-This project is a React Native (Expo + Web) website for a store with:
+Professional Expo web storefront with a Payload CMS admin backend and Supabase Postgres storage.
 
-- Contact information tab
-- Store locator tab for all stores
-- Prices tab for products
-- Supabase integration for live data
-- Supabase migration-based database initialization
+## Architecture
 
-## Run locally
+- `App.js` (Expo web frontend shown to customers)
+- `cms/` (Payload CMS admin for owner/staff editing)
+- Supabase Postgres (database for Payload collections)
+- Supabase CLI via `npx supabase` for DB workflows
+
+## What can be edited in CMS
+
+- Products and vape pricing
+- News posts
+- Page content blocks
+- Store locations/hours
+- Site settings (brand, tagline, support, promo bar text)
+
+## Environment setup
+
+Create `.env` from `.env.example` in the repo root.
+
+Create `cms/.env` from `cms/.env.example`.
+
+Important:
+
+- Use your Supabase **publishable** key in `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Keep `SUPABASE_SECRET_KEY` server-side only (never `EXPO_PUBLIC_*`).
+- Set `SUPABASE_DB_URL` / `PAYLOAD_DATABASE_URI` with your real DB password.
+
+## Local development
+
+Frontend:
 
 ```bash
 npm install
 npm run web
 ```
 
-## Environment setup
+CMS:
 
-A `.env` file is included with established variables:
-
-```env
-EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-EXPO_PUBLIC_SUPABASE_CONTACT_TABLE=contact_info
-EXPO_PUBLIC_SUPABASE_STORES_TABLE=stores
-EXPO_PUBLIC_SUPABASE_PRODUCTS_TABLE=products
+```bash
+npm run cms:install
+npm run cms:dev
 ```
 
-Replace URL and anon key with your real Supabase project values.
+CMS admin runs at:
 
-To initialize the remote Supabase database, set:
+`http://localhost:3001/admin`
 
-```env
-SUPABASE_DB_URL=postgresql://postgres:password@db.your-project-ref.supabase.co:5432/postgres
+Set frontend CMS API target with:
+
+`EXPO_PUBLIC_CMS_URL=http://localhost:3001`
+
+## Supabase CLI
+
+Check CLI:
+
+```bash
+npm run supabase:version
 ```
 
-Then run:
+Push SQL migrations in `supabase/migrations`:
 
 ```bash
 npm run db:init
 ```
 
-## Supabase table fields expected
+Or use linked-project flow:
 
-- `contact_info`: `name`, `tagline`, `support_email`, `support_phone`
-- `stores`: `id`, `name`, `address`, `phone`, `hours`, `maps_url`
-- `products`: `id`, `name`, `price`
+```bash
+npm run db:init:cli
+```
 
-If Supabase is not configured or a query fails, the app uses local fallback data.
+## GitHub Pages deployment
+
+Build static export + prepare `docs/`:
+
+```bash
+npm run build:pages
+```
+
+Automatic deploy workflow:
+
+- `.github/workflows/deploy-pages.yml`
+- Runs on push to `main`
+- Publishes built `docs/` artifact to GitHub Pages

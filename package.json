@@ -8,8 +8,15 @@
     "web": "expo start --web",
     "android": "expo start --android",
     "ios": "expo start --ios",
+    "build:web": "expo export --platform web",
+    "build:pages": "npm run build:web && node scripts/prepare-pages.mjs",
     "db:init": "node scripts/init-supabase.mjs",
-    "db:init:cli": "node scripts/init-supabase-cli.mjs"
+    "db:init:cli": "node scripts/init-supabase-cli.mjs",
+    "supabase:version": "npx supabase --version",
+    "cms:install": "npm --prefix cms install",
+    "cms:dev": "npm --prefix cms run dev -- --port 3001",
+    "cms:build": "npm --prefix cms run build",
+    "cms:start": "npm --prefix cms run start -- -p 3001"
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.5",
@@ -23,6 +30,8 @@
     "react-native-web": "~0.20.0"
   },
   "devDependencies": {
-    "supabase": "^2.76.10"
+    "@types/react": "~19.0.10",
+    "supabase": "^2.76.10",
+    "typescript": "~5.8.3"
   }
 }

@@ -2,12 +2,16 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useMemo, useState } from "react";
 import { ImageBackground, Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { isSupabaseConfigured, supabase } from "./src/lib/supabase";
+import { isCmsConfigured, loadCmsContent } from "./src/lib/cms";
 
 const DEFAULT_BRAND = {
   name: "OG Hustlers Vape & Smoke",
   tagline: "Premium vape hardware, lab-tested THCA, and curated smoke essentials",
   supportEmail: "support@oghustlers.com",
   supportPhone: "+1 (555) 010-2424",
+  promoBarText: "Adult 21+ Retail | Curated Vape and Smoke Inventory | Daily Store Support",
+  heroBody:
+    "Retail-focused service, polished presentation, and fast support across every location. Built for customers who expect quality and consistency.",
 };
 
 const DEFAULT_STORES = [
@@ -54,6 +58,21 @@ const DEFAULT_PRODUCTS = [
   { id: "p-006", name: "Concentrate Tool Kit", category: "Accessories", price: "$27.99" },
 ];
 
+const DEFAULT_NEWS = [
+  {
+    id: "n-001",
+    title: "Weekend Flavor Drop",
+    excerpt: "New premium flavors are now available in all OG Hustlers locations while supplies last.",
+    publishedAt: "2026-02-15T10:00:00.000Z",
+  },
+  {
+    id: "n-002",
+    title: "Expanded Device Selection",
+    excerpt: "We expanded our premium disposable lineup with more battery life and better flavor consistency.",
+    publishedAt: "2026-02-10T10:00:00.000Z",
+  },
+];
+
 const FEATURED_COLLECTIONS = [
   {
     id: "c-01",
@@ -97,8 +116,16 @@ const TABS = [
   { id: "overview", label: "Overview" },
   { id: "locations", label: "Locations" },
   { id: "catalog", label: "Catalog" },
+  { id: "news", label: "News" },
   { id: "contact", label: "Contact" },
 ];
+
+const DEFAULT_HOME_PAGE = {
+  summary:
+    "OG Hustlers operates with a category-first floor plan, faster in-store support, and high-turn product lines for consistent availability.",
+  heroHeadline: "",
+  heroCopy: "",
+};
 
 const CONTACT_TABLE =
   process.env.EXPO_PUBLIC_SUPABASE_CONTACT_TABLE ||
@@ -140,6 +167,16 @@ function inferCategory(name) {
   return "Featured";
 }
 
+function formatDateLabel(value) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return "Unscheduled";
+  return parsed.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
 function TabButton({ active, label, onPress }) {
   return (
     <Pressable onPress={onPress} style={[styles.tabButton, active && styles.tabButtonActive]}>
@@ -148,16 +185,14 @@ function TabButton({ active, label, onPress }) {
   );
 }
 
-function OverviewTab({ stores }) {
+function OverviewTab({ stores, homePage }) {
   return (
     <View style={styles.sectionWrap}>
       <View style={styles.sectionIntroRow}>
         <View style={styles.sectionIntroCard}>
           <Text style={styles.sectionTag}>Retail Profile</Text>
           <Text style={styles.sectionHeading}>Built for professional vape retail</Text>
-          <Text style={styles.sectionSubheading}>
-            OG Hustlers operates with a category-first floor plan, faster in-store support, and high-turn product lines for consistent availability.
-          </Text>
+          <Text style={styles.sectionSubheading}>{homePage.summary || DEFAULT_HOME_PAGE.summary}</Text>
         </View>
         <View style={styles.summaryCard}>
           <Text style={styles.summaryEyebrow}>Coverage</Text>
@@ -238,6 +273,23 @@ function CatalogTab({ products }) {
   );
 }
 
+function NewsTab({ newsItems }) {
+  return (
+    <View style={styles.sectionWrap}>
+      <Text style={styles.sectionHeading}>Store News</Text>
+      <Text style={styles.sectionSubheading}>Owner-updated announcements from Payload CMS.</Text>
+      {newsItems.map((item) => (
+        <View key={item.id} style={styles.newsCard}>
+          <Text style={styles.newsDate}>{formatDateLabel(item.publishedAt)}</Text>
+          <Text style={styles.newsTitle}>{item.title}</Text>
+          <Text style={styles.newsExcerpt}>{item.excerpt}</Text>
+        </View>
+      ))}
+      {newsItems.length === 0 && <Text style={styles.emptyState}>No published news posts yet.</Text>}
+    </View>
+  );
+}
+
 function ContactTab({ brand }) {
   return (
     <View style={styles.sectionWrap}>
@@ -275,6 +327,8 @@ export default function App() {
   const [brand, setBrand] = useState(DEFAULT_BRAND);
   const [stores, setStores] = useState(DEFAULT_STORES);
   const [products, setProducts] = useState(DEFAULT_PRODUCTS);
+  const [newsItems, setNewsItems] = useState(DEFAULT_NEWS);
+  const [homePage, setHomePage] = useState(DEFAULT_HOME_PAGE);
   const [status, setStatus] = useState("Using local fallback data");
 
   useEffect(() => {
@@ -282,7 +336,7 @@ export default function App() {
 
     async function loadSupabaseData() {
       if (!isSupabaseConfigured || !supabase) {
-        setStatus("Using local fallback data. Add Supabase .env values to enable live data.");
+        setStatus("Using local fallback data. Add Payload CMS or Supabase .env values to enable live data.");
         return;
       }
 
@@ -300,12 +354,13 @@ export default function App() {
       }
 
       if (contactResult.data) {
-        setBrand({
+        setBrand((current) => ({
+          ...current,
           name: contactResult.data.name || DEFAULT_BRAND.name,
           tagline: contactResult.data.tagline || DEFAULT_BRAND.tagline,
           supportEmail: contactResult.data.support_email || DEFAULT_BRAND.supportEmail,
           supportPhone: contactResult.data.support_phone || DEFAULT_BRAND.supportPhone,
-        });
+        }));
       }
 
       if (Array.isArray(storeResult.data) && storeResult.data.length > 0) {
@@ -335,9 +390,82 @@ export default function App() {
       setStatus("Live data loaded from Supabase");
     }
 
-    loadSupabaseData().catch(() => {
+    async function loadData() {
+      if (isCmsConfigured) {
+        try {
+          const cmsData = await loadCmsContent();
+          if (!mounted) return;
+
+          if (cmsData.siteSettings) {
+            setBrand((current) => ({
+              ...current,
+              name: cmsData.siteSettings.brandName || current.name,
+              tagline: cmsData.siteSettings.tagline || current.tagline,
+              supportEmail: cmsData.siteSettings.supportEmail || current.supportEmail,
+              supportPhone: cmsData.siteSettings.supportPhone || current.supportPhone,
+              promoBarText: cmsData.siteSettings.promoBarText || current.promoBarText,
+              heroBody: cmsData.siteSettings.heroBody || current.heroBody,
+            }));
+          }
+
+          if (Array.isArray(cmsData.stores) && cmsData.stores.length > 0) {
+            setStores(
+              cmsData.stores.map((store, index) => ({
+                id: String(store.id || `store-${index + 1}`),
+                name: store.name || "OG Hustlers Store",
+                address: store.address || "Address unavailable",
+                phone: store.phone || "Phone unavailable",
+                hours: store.hours || "Hours unavailable",
+                mapsUrl: store.mapsUrl || "https://maps.google.com",
+              }))
+            );
+          }
+
+          if (Array.isArray(cmsData.products) && cmsData.products.length > 0) {
+            setProducts(
+              cmsData.products.map((product, index) => ({
+                id: String(product.id || `product-${index + 1}`),
+                name: product.name || "Product",
+                category: product.category || inferCategory(product.name),
+                price: normalizePrice(product.price || "N/A"),
+              }))
+            );
+          }
+
+          if (Array.isArray(cmsData.news)) {
+            setNewsItems(
+              cmsData.news.map((post, index) => ({
+                id: String(post.id || `news-${index + 1}`),
+                title: post.title || "News Update",
+                excerpt: post.excerpt || "No summary provided.",
+                publishedAt: post.publishedAt || new Date().toISOString(),
+              }))
+            );
+          }
+
+          if (cmsData.homePage) {
+            setHomePage({
+              summary: cmsData.homePage.summary || DEFAULT_HOME_PAGE.summary,
+              heroHeadline: cmsData.homePage.heroHeadline || "",
+              heroCopy: cmsData.homePage.heroCopy || "",
+            });
+          }
+
+          setStatus("Live data loaded from Payload CMS (Supabase-backed)");
+          return;
+        } catch {
+          if (mounted) {
+            setStatus("Payload CMS request failed. Falling back to Supabase/local data.");
+          }
+        }
+      }
+
+      await loadSupabaseData();
+    }
+
+    loadData().catch(() => {
       if (mounted) {
-        setStatus("Supabase request failed. Using local fallback data.");
+        setStatus("Data request failed. Using local fallback data.");
       }
     });
 
@@ -347,11 +475,12 @@ export default function App() {
   }, []);
 
   const content = useMemo(() => {
-    if (activeTab === "overview") return <OverviewTab stores={stores} />;
+    if (activeTab === "overview") return <OverviewTab stores={stores} homePage={homePage} />;
     if (activeTab === "locations") return <LocationsTab stores={stores} />;
     if (activeTab === "catalog") return <CatalogTab products={products} />;
+    if (activeTab === "news") return <NewsTab newsItems={newsItems} />;
     return <ContactTab brand={brand} />;
-  }, [activeTab, brand, products, stores]);
+  }, [activeTab, brand, homePage, newsItems, products, stores]);
 
   return (
     <SafeAreaView style={styles.root}>
@@ -365,7 +494,7 @@ export default function App() {
       <ScrollView contentContainerStyle={styles.page}>
         <View style={styles.pageShell}>
           <View style={styles.promoBar}>
-            <Text style={styles.promoText}>Adult 21+ Retail | Curated Vape and Smoke Inventory | Daily Store Support</Text>
+            <Text style={styles.promoText}>{brand.promoBarText}</Text>
           </View>
 
           <ImageBackground
@@ -376,10 +505,8 @@ export default function App() {
             <View style={styles.heroOverlay}>
               <Text style={styles.heroOverline}>Professional Vape Shop Experience</Text>
               <Text style={styles.heroTitle}>{brand.name}</Text>
-              <Text style={styles.heroTagline}>{brand.tagline}</Text>
-              <Text style={styles.heroBody}>
-                Retail-focused service, polished presentation, and fast support across every location. Built for customers who expect quality and consistency.
-              </Text>
+              <Text style={styles.heroTagline}>{homePage.heroHeadline || brand.tagline}</Text>
+              <Text style={styles.heroBody}>{homePage.heroCopy || brand.heroBody}</Text>
               <View style={styles.heroActions}>
                 <Pressable onPress={() => setActiveTab("locations")} style={[styles.heroBtn, styles.heroBtnSolid]}>
                   <Text style={[styles.heroBtnText, styles.heroBtnTextSolid]}>Find A Store</Text>
@@ -860,6 +987,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     flexShrink: 1,
     textAlign: "right",
+  },
+  newsCard: {
+    backgroundColor: "#ffffff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#d0dce2",
+    padding: 14,
+    gap: 6,
+  },
+  newsDate: {
+    color: "#587180",
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    fontWeight: "700",
+  },
+  newsTitle: {
+    color: "#0f354b",
+    fontSize: 18,
+    fontWeight: "900",
+  },
+  newsExcerpt: {
+    color: "#4f6674",
+    fontSize: 14,
+    lineHeight: 21,
+  },
+  emptyState: {
+    color: "#617885",
+    fontSize: 14,
   },
   contactGrid: {
     flexDirection: "row",
