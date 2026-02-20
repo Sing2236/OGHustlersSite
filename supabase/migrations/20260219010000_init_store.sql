@@ -66,9 +66,10 @@ where id = (
 
 insert into public.stores (id, name, address, phone, hours, maps_url)
 values
-  ('stl-01', 'OG Hustlers - Downtown', '1209 Market St, St. Louis, MO 63103', '+1 (314) 555-0110', 'Mon-Sat 10:00 AM-10:00 PM, Sun 11:00 AM-8:00 PM', 'https://maps.google.com/?q=1209+Market+St+St+Louis+MO+63103'),
-  ('stl-02', 'OG Hustlers - South City', '4922 Chippewa St, St. Louis, MO 63109', '+1 (314) 555-0111', 'Daily 9:00 AM-11:00 PM', 'https://maps.google.com/?q=4922+Chippewa+St+St+Louis+MO+63109'),
-  ('stl-03', 'OG Hustlers - North County', '2474 N Lindbergh Blvd, Florissant, MO 63033', '+1 (314) 555-0112', 'Daily 10:00 AM-10:00 PM', 'https://maps.google.com/?q=2474+N+Lindbergh+Blvd+Florissant+MO+63033')
+  ('stl-01', 'OG Hustlers - Spring Garden', '2500 Spring Garden St, Greensboro, NC 27403, United States', '+1 (336) 555-0101', 'Mon-Sat 10:00 AM-10:00 PM, Sun 11:00 AM-8:00 PM', 'https://maps.google.com/?q=2500+Spring+Garden+St+Greensboro+NC+27403+United+States'),
+  ('stl-02', 'OG Hustlers - East Bessemer A', '1700 E Bessemer Ave suit B, Greensboro, NC 27405, United States', '+1 (336) 555-0102', 'Daily 9:00 AM-11:00 PM', 'https://maps.google.com/?q=1700+E+Bessemer+Ave+suit+B+Greensboro+NC+27405+United+States'),
+  ('stl-03', 'OG Hustlers - East Bessemer B', '2400 E Bessemer Ave, Greensboro, NC 27405, USA', '+1 (336) 555-0103', 'Daily 9:00 AM-11:00 PM', 'https://maps.google.com/?q=2400+E+Bessemer+Ave+Greensboro+NC+27405+USA'),
+  ('stl-04', 'OG Hustlers - East Market', '2204 E Market St, Greensboro, NC 27401, USA', '+1 (336) 555-0104', 'Daily 9:00 AM-11:00 PM', 'https://maps.google.com/?q=2204+E+Market+St+Greensboro+NC+27401+USA')
 on conflict (id) do update
 set
   name = excluded.name,
