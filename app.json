@@ -5,7 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
     }
   }
 }
